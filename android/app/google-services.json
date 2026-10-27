@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "56764875423",
+    "project_id": "oneoftwo-4a094",
+    "storage_bucket": "oneoftwo-4a094.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56764875423:android:1d2c71b983052b846518aa",
+        "android_client_info": {
+          "package_name": "com.example.rememebering"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDY4tH1rkVbTvz_ToA8sh1xhXaFbOCYj10"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+
+    // Profiles: any signed-in user can read (search, profiles); only you can write yours.
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Questions: signed-in users read and post; voting may only add 1 to one counter.
+    match /questions/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.answer1Votes == 0
+        && request.resource.data.answer2Votes == 0;
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['answer1Votes', 'answer2Votes'])
+        && ((request.resource.data.answer1Votes == resource.data.answer1Votes + 1
+             && request.resource.data.answer2Votes == resource.data.answer2Votes)
+          || (request.resource.data.answer2Votes == resource.data.answer2Votes + 1
+             && request.resource.data.answer1Votes == resource.data.answer1Votes));
+      allow delete: if signedIn() && resource.data.authorId == request.auth.uid;
+    }
+
+    // Follows: you can only follow/unfollow as yourself.
+    match /follows/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.followerId == request.auth.uid
+        && id == request.auth.uid + '_' + request.resource.data.followingId;
+      allow delete: if signedIn() && resource.data.followerId == request.auth.uid;
+    }
+
+    // Shared questions: only sender and receiver can see them; receiver marks seen.
+    match /sharedQuestions/{id} {
+      allow read: if signedIn()
+        && (resource.data.toUserId == request.auth.uid
+            || resource.data.fromUserId == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.fromUserId == request.auth.uid;
+      allow update: if signedIn() && resource.data.toUserId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen']);
+    }
+  }
+}
